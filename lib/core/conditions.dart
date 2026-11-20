@@ -21,7 +21,7 @@ class DeviceState {
     charging: map['enCharge'] == true,
   );
 
-  /// Android entoure le nom de guillemets et le remplace par « <unknown ssid> » quand il
+  /// Android entoure le nom de guillemets et le remplace par `<unknown ssid>` quand il
   /// ne veut pas le donner.
   static String? _cleanSsid(String? raw) {
     if (raw == null) return null;
