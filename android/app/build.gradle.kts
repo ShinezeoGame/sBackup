@@ -61,6 +61,8 @@ android {
             // Clé personnelle si key.properties est présent, sinon clé de debug
             // (suffisant pour installer l'APK sur son propre téléphone).
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // Règles pour smbj (partage Windows) : voir proguard-rules.pro.
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
