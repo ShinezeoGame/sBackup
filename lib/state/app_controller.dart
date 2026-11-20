@@ -42,6 +42,15 @@ class AppController extends ChangeNotifier {
   BackupProgress progress = BackupProgress.idle;
   Notice? notice;
 
+  /// Un mot de passe du NAS est enregistré (sa valeur reste côté Android).
+  bool hasPassword = false;
+
+  /// Essai de connexion au NAS en cours.
+  bool testingDestination = false;
+
+  /// Résultat du dernier essai de connexion : `null` pas encore essayé.
+  Notice? destinationTest;
+
   StreamSubscription<BackupProgress>? _progressSub;
   bool _disposed = false;
 
@@ -79,6 +88,7 @@ class AppController extends ChangeNotifier {
     try {
       permissions = await platform.permissions();
       device = await platform.deviceState();
+      hasPassword = await platform.hasPassword();
     } on Object {
       // L'état précédent reste affiché.
     }
@@ -144,6 +154,38 @@ class AppController extends ChangeNotifier {
   Future<void> removeHomeNetwork(String ssid) =>
       updateSettings(settings.copyWith(homeNetworks: [...settings.homeNetworks.where((s) => s != ssid)]));
 
+  /// Enregistre la destination (et le mot de passe s'il est donné), puis essaie de s'y
+  /// connecter pour dire tout de suite si c'est bon.
+  Future<void> saveDestination(DestinationConfig config, {String? password}) async {
+    await updateSettings(settings.copyWith(destination: config));
+    if (password != null && password.isNotEmpty) {
+      await platform.savePassword(password);
+      hasPassword = true;
+    }
+    await testDestination();
+  }
+
+  Future<void> testDestination() async {
+    if (!settings.destination.isComplete) {
+      destinationTest = const Notice('Indiquez l\'adresse du NAS, le dossier partagé et l\'identifiant.', error: true);
+      _notify();
+      return;
+    }
+    testingDestination = true;
+    destinationTest = null;
+    _notify();
+    try {
+      final error = await platform.testDestination(settings.destination);
+      destinationTest = error == null
+          ? const Notice('Connexion réussie : le dossier de destination est prêt.')
+          : Notice(error, error: true);
+    } on Object {
+      destinationTest = const Notice('L\'essai de connexion a échoué.', error: true);
+    }
+    testingDestination = false;
+    _notify();
+  }
+
   Future<void> runNow() async {
     final reason = blocker;
     if (reason != null) {
@@ -197,6 +239,7 @@ class AppController extends ChangeNotifier {
     int? savedCount,
     int? savedBytes,
     Notice? notice,
+    bool? hasPassword,
   }) {
     if (albums != null) this.albums = albums;
     if (history != null) this.history = history;
@@ -206,6 +249,7 @@ class AppController extends ChangeNotifier {
     if (savedCount != null) this.savedCount = savedCount;
     if (savedBytes != null) this.savedBytes = savedBytes;
     if (notice != null) this.notice = notice;
+    if (hasPassword != null) this.hasPassword = hasPassword;
     _notify();
   }
 }

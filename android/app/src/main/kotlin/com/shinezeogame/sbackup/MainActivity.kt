@@ -23,6 +23,8 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         MethodChannel(messenger, SystemChannel.NAME).setMethodCallHandler(SystemChannel(applicationContext, this))
+        // « Tester la connexion » dans les réglages.
+        MethodChannel(messenger, SmbChannel.NAME).setMethodCallHandler(SmbChannel(applicationContext))
         EventChannel(messenger, "sbackup/progression").setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) = ProgressHub.attach(events)
 

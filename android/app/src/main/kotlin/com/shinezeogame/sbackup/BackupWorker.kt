@@ -86,6 +86,8 @@ class BackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker
                     }
                     true
                 })
+                MethodChannel(created.dartExecutor.binaryMessenger, SmbChannel.NAME)
+                    .setMethodCallHandler(SmbChannel(applicationContext))
                 created.dartExecutor.executeDartEntrypoint(
                     DartExecutor.DartEntrypoint(loader.findAppBundlePath(), "sauvegardeArrierePlan"),
                 )

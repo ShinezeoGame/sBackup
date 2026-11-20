@@ -20,13 +20,15 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final AppController _controller = AppScope.read(context);
   late final _host = TextEditingController(text: _controller.settings.destination.host);
+  late final _share = TextEditingController(text: _controller.settings.destination.share);
   late final _folder = TextEditingController(text: _controller.settings.destination.folder);
   late final _user = TextEditingController(text: _controller.settings.destination.user);
+  final _password = TextEditingController();
   final _network = TextEditingController();
 
   @override
   void dispose() {
-    for (final c in [_host, _folder, _user, _network]) {
+    for (final c in [_host, _share, _folder, _user, _password, _network]) {
       c.dispose();
     }
     super.dispose();
@@ -34,16 +36,24 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool get _destinationChanged {
     final d = _controller.settings.destination;
-    return _host.text.trim() != d.host || _folder.text.trim() != d.folder || _user.text.trim() != d.user;
+    return _host.text.trim() != d.host ||
+        _share.text.trim() != d.share ||
+        _folder.text.trim() != d.folder ||
+        _user.text.trim() != d.user ||
+        _password.text.isNotEmpty;
   }
 
   Future<void> _saveDestination() async {
-    final settings = _controller.settings;
-    await _controller.updateSettings(
-      settings.copyWith(
-        destination: DestinationConfig(host: _host.text.trim(), folder: _folder.text.trim(), user: _user.text.trim()),
+    await _controller.saveDestination(
+      DestinationConfig(
+        host: _host.text.trim(),
+        share: _share.text.trim(),
+        folder: _folder.text.trim(),
+        user: _user.text.trim(),
       ),
+      password: _password.text,
     );
+    _password.clear();
     if (mounted) setState(() {});
   }
 
@@ -62,46 +72,81 @@ class _SettingsPageState extends State<SettingsPage> {
     return AppPage(
       header: const PageHeader(title: 'Réglages'),
       children: [
-        const SectionTitle('Le NAS'),
+        const SectionTitle('Le NAS', detail: 'partage Windows (SMB)'),
         Tile(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
                 controller: _host,
-                decoration: const InputDecoration(labelText: 'Adresse du NAS', hintText: '192.168.1.10'),
+                decoration: const InputDecoration(labelText: 'Adresse IP du NAS', hintText: '192.168.1.10'),
                 keyboardType: TextInputType.url,
                 autocorrect: false,
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _folder,
-                decoration: const InputDecoration(labelText: 'Dossier de destination', hintText: 'Photos/Téléphone'),
+                controller: _user,
+                decoration: const InputDecoration(labelText: 'Identifiant', helperText: 'Votre compte du NAS (DSM).'),
                 autocorrect: false,
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 10),
               TextField(
-                controller: _user,
-                decoration: const InputDecoration(labelText: 'Identifiant sur le NAS'),
+                controller: _password,
+                obscureText: true,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(
+                  labelText: 'Mot de passe',
+                  helperText: controller.hasPassword
+                      ? 'Enregistré et chiffré sur le téléphone. Laissez vide pour le garder.'
+                      : 'Gardé chiffré sur le téléphone, jamais affiché.',
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _share,
+                decoration: const InputDecoration(
+                  labelText: 'Dossier partagé',
+                  helperText: '« home » : votre espace personnel du Synology.',
+                ),
                 autocorrect: false,
                 onChanged: (_) => setState(() {}),
               ),
-              const SizedBox(height: 12),
-              const MessageBanner(
-                message:
-                    'Le protocole du NAS (partage Windows, WebDAV, SFTP…) et le mot de passe arriveront avec la '
-                    'prochaine version : en attendant, aucun envoi n\'est possible.',
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: AppButton(
-                  label: 'Enregistrer',
-                  kind: ButtonKind.primary,
-                  onPressed: _destinationChanged ? _saveDestination : null,
+              const SizedBox(height: 10),
+              TextField(
+                controller: _folder,
+                decoration: const InputDecoration(
+                  labelText: 'Dossier des photos',
+                  helperText: 'Dans « home », le dossier Photos est affiché par Synology Photos. Créé s\'il manque.',
                 ),
+                autocorrect: false,
+                onChanged: (_) => setState(() {}),
+              ),
+              if (controller.destinationTest case final result?) ...[
+                const SizedBox(height: 12),
+                MessageBanner(message: result.message, error: result.error),
+              ],
+              const SizedBox(height: 12),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  AppButton(
+                    label: 'Tester',
+                    busy: controller.testingDestination,
+                    onPressed: _destinationChanged ? null : controller.testDestination,
+                  ),
+                  AppButton(
+                    label: 'Enregistrer',
+                    kind: ButtonKind.primary,
+                    busy: controller.testingDestination,
+                    onPressed: _destinationChanged ? _saveDestination : null,
+                  ),
+                ],
               ),
             ],
           ),

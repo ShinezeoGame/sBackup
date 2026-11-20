@@ -18,10 +18,13 @@
   - `lib/state/app_controller.dart` : état de l'interface.
   - Android : `BackupScheduler.kt` (WorkManager : horaire, nouvelle photo, immédiat),
     `BackupWorker.kt` (moteur Flutter sans interface, service au premier plan `dataSync`),
-    `SystemChannel.kt`, `MediaQueries.kt`, `ProgressHub.kt`, `StopReceiver.kt`.
-- **État** : le protocole du NAS n'est pas encore branché (`createDestination` renvoie
-  `null`). Questions posées à l'utilisateur : marque et modèle du NAS, protocole (SMB,
-  WebDAV, SFTP), dossier de destination, albums par défaut.
+    `SystemChannel.kt`, `MediaQueries.kt`, `ProgressHub.kt`, `StopReceiver.kt`,
+    `SmbChannel.kt`, `SecretStore.kt`.
+- **Le NAS de l'utilisateur** : Synology DS415+. Protocole : partage Windows (SMB 2/3),
+  `SmbDestination` (Dart) ↔ canal `sbackup/smb` ↔ `SmbChannel.kt` (smbj). Par défaut :
+  partage `home`, dossier `Photos/Téléphone` (visible dans Synology Photos). Mot de passe
+  chiffré par `SecretStore.kt` (AndroidKeyStore), jamais renvoyé au Dart. Albums par
+  défaut : appareil photo et captures d'écran, **pas WhatsApp** (demande de l'utilisateur).
 - Règles à ne pas affaiblir : **jamais de suppression** sur le téléphone ni sur le NAS
   (la seule écriture qui repart de zéro concerne les `.part` de `.sbackup-partiel`) ;
   jamais d'écrasement (`renameNoReplace`, `candidateNames`) ; un fichier n'est rangé
@@ -38,7 +41,8 @@
     texte agrandi à 130 %).
 - Vérifications avant de pousser : `dart format -l 120 lib test`, `flutter analyze`,
   `flutter test` (`test/core_test.dart` : moteur et passages contre une destination
-  factice ; `test/app_test.dart` : l'interface à trois tailles).
+  factice ; `test/smb_test.dart` : la destination SMB contre un faux NAS derrière le canal ;
+  `test/app_test.dart` : l'interface à trois tailles).
 - Captures de la documentation : `SBACKUP_CAPTURES=1 flutter test test/captures_test.dart`.
 - La CI (`.github/workflows/build.yml`) vérifie le format, analyse, teste et compile l'APK
   (`sbackup-android`). La Release n'est publiée que sur `main` ou à la demande. Travailler

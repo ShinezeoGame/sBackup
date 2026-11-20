@@ -104,7 +104,7 @@ class BackupJob {
     if (destination == null) {
       return finish(
         RunOutcome.failed,
-        'Le protocole du NAS n\'est pas encore branché dans cette version : aucun envoi possible.',
+        'Le NAS n\'est pas complètement configuré : adresse, dossier partagé et identifiant.',
       );
     }
 

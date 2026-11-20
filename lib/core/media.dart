@@ -74,8 +74,8 @@ class MediaItem {
   }
 }
 
-/// Albums cochés par défaut, reconnus par leur dossier sur le téléphone : appareil photo,
-/// captures d'écran et photos reçues par WhatsApp.
+/// Albums cochés par défaut, reconnus par leur dossier sur le téléphone : appareil photo et
+/// captures d'écran (pas WhatsApp, à la demande de l'utilisateur).
 bool isDefaultAlbum(Album album) {
   final path = album.path.toLowerCase();
   final name = album.name.toLowerCase();
@@ -84,9 +84,5 @@ bool isDefaultAlbum(Album album) {
       name == 'appareil photo' ||
       path.contains('screenshots') ||
       name == 'screenshots' ||
-      name == 'captures d\'écran' ||
-      path.contains('whatsapp images') ||
-      path.contains('whatsapp video') ||
-      name == 'whatsapp images' ||
-      name == 'whatsapp video';
+      name == 'captures d\'écran';
 }

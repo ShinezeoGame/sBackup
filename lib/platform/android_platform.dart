@@ -1,10 +1,14 @@
 import 'package:flutter/services.dart';
 
+import '../core/backup_job.dart';
 import '../core/conditions.dart';
+import '../core/destination.dart';
+import '../core/settings.dart';
 import '../core/history.dart';
 import '../core/media.dart';
 import '../core/progress.dart';
 import 'platform.dart';
+import 'smb_destination.dart';
 
 /// Canal vers `android/…/SystemChannel.kt`, partagé par l'interface et par la sauvegarde
 /// en arrière-plan (`BackupWorker.kt`, qui démarre son propre moteur Flutter).
@@ -63,6 +67,29 @@ class AndroidPlatform implements PhonePlatform {
   Stream<BackupProgress> progress() => _progressChannel.receiveBroadcastStream().map(
     (event) => event is Map ? BackupProgress.fromMap(event) : BackupProgress.idle,
   );
+
+  @override
+  Future<void> savePassword(String password) => const NasPassword().save(password);
+
+  @override
+  Future<bool> hasPassword() => const NasPassword().isSaved();
+
+  @override
+  Future<String?> testDestination(DestinationConfig config) async {
+    final nas = SmbDestination(config);
+    try {
+      await nas.open();
+      return null;
+    } on DestinationException catch (e) {
+      return describeFailure(e.failure);
+    } finally {
+      try {
+        await nas.close();
+      } on DestinationException {
+        // Déjà déconnecté.
+      }
+    }
+  }
 
   // ── Côté sauvegarde en arrière-plan ──
 

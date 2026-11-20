@@ -255,7 +255,7 @@ void main() {
       bool d(String name, String path) => isDefaultAlbum(Album(id: '', name: name, count: 0, bytes: 0, path: path));
       expect(d('Camera', 'DCIM/Camera/'), isTrue);
       expect(d('Screenshots', 'DCIM/Screenshots/'), isTrue);
-      expect(d('WhatsApp Images', 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/'), isTrue);
+      expect(d('WhatsApp Images', 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/'), isFalse);
       expect(d('Download', 'Download/'), isFalse);
     });
   });
@@ -263,7 +263,7 @@ void main() {
   group('conditions', () {
     const ready = Settings(
       homeNetworks: ['Maison'],
-      destination: DestinationConfig(host: 'nas', folder: 'Photos'),
+      destination: DestinationConfig(host: 'nas', user: 'shine'),
     );
     Blocker? check(Settings s, {bool wifi = true, String? ssid = '"Maison"', bool charging = false}) =>
         blockerFor(s, DeviceState.fromMap({'wifi': wifi, 'ssid': ssid, 'enCharge': charging}));
@@ -297,7 +297,7 @@ void main() {
       await settingsStore.save(
         const Settings(
           homeNetworks: ['Maison'],
-          destination: DestinationConfig(host: '192.168.1.10', folder: 'Photos'),
+          destination: DestinationConfig(host: '192.168.1.10', user: 'shine'),
         ),
       );
     });
@@ -353,11 +353,11 @@ void main() {
       expect(record.message, contains('ne répond pas'));
     });
 
-    test('sans protocole branché, la raison est donnée honnêtement', () async {
+    test('sans destination possible, la raison est donnée', () async {
       destination = null;
       final record = await job().run(RunTrigger.manual);
       expect(record.outcome, RunOutcome.failed);
-      expect(record.message, contains('pas encore branché'));
+      expect(record.message, contains('pas complètement configuré'));
     });
 
     test('Wi-Fi perdu pendant l\'envoi : arrêt propre, reprise ensuite', () async {

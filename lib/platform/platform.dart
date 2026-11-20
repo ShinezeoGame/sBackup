@@ -1,4 +1,5 @@
 import '../core/backup_job.dart';
+import '../core/settings.dart';
 import '../core/progress.dart';
 
 /// Accès aux photos et vidéos accordé par Android 14+ : tout, une sélection, ou rien.
@@ -71,4 +72,12 @@ abstract class PhonePlatform implements SystemPort {
 
   /// Avancement des sauvegardes, qu'elles soient lancées par l'interface ou par Android.
   Stream<BackupProgress> progress();
+
+  /// Enregistre le mot de passe du NAS (chiffré par Android, jamais relu par l'interface).
+  Future<void> savePassword(String password);
+
+  Future<bool> hasPassword();
+
+  /// Essaie de se connecter au NAS : `null` si tout va bien, sinon l'explication.
+  Future<String?> testDestination(DestinationConfig config);
 }

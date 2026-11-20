@@ -44,7 +44,7 @@ class AlbumsPage extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12, left: 2, right: 2),
             child: Text(
               controller.settings.albums == null
-                  ? 'Par défaut : appareil photo, captures d\'écran et WhatsApp. Cochez ce que vous voulez garder.'
+                  ? 'Par défaut : appareil photo et captures d\'écran. Cochez ce que vous voulez garder.'
                   : 'Les albums cochés sont sauvegardés. Décocher un album ne supprime rien sur le NAS.',
               style: t.secondary,
             ),

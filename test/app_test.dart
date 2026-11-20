@@ -165,18 +165,20 @@ void main() {
         await tester.tap(find.text('Choisir'));
         await tester.pumpAndSettle();
         expect(find.byType(AlbumsPage), findsOneWidget);
-        expect(controller.selectedAlbumIds, {'cam', 'shots', 'wa'});
+        expect(controller.selectedAlbumIds, {'cam', 'shots'});
         await tester.tap(find.text('Download'));
         await tester.pump();
         await tester.tap(find.text('Screenshots'));
         await tester.pump();
-        expect(controller.settings.albums, {'cam', 'wa', 'dl'});
+        expect(controller.settings.albums, {'cam', 'dl'});
         await scrollThrough(tester);
         await tearDownApp(tester, controller);
       });
 
       testWidgets('page Réglages : NAS, Wi-Fi, conditions, thème', (tester) async {
-        final fake = FakePlatform()..state = const DeviceState(onWifi: true, ssid: 'Livebox-Salon', charging: false);
+        final fake = FakePlatform()
+          ..password = null
+          ..state = const DeviceState(onWifi: true, ssid: 'Livebox-Salon', charging: false);
         final (controller, _) = await pumpApp(
           tester,
           size,
@@ -190,14 +192,29 @@ void main() {
         expect(find.byType(SettingsPage), findsOneWidget);
         expect(tester.takeException(), isNull);
 
-        await tester.enterText(find.widgetWithText(TextField, 'Adresse du NAS'), '192.168.1.10');
-        await tester.enterText(find.widgetWithText(TextField, 'Dossier de destination'), 'Photos');
+        // Valeurs proposées pour un Synology : espace personnel, dossier Photos.
+        expect(find.widgetWithText(TextField, 'home'), findsOneWidget);
+        await tester.enterText(find.widgetWithText(TextField, 'Adresse IP du NAS'), '192.168.1.10');
+        await tester.enterText(find.widgetWithText(TextField, 'Identifiant'), 'shine');
+        await show(tester, find.widgetWithText(TextField, 'Mot de passe'));
+        await tester.enterText(find.widgetWithText(TextField, 'Mot de passe'), 'motdepasse');
         await tester.pump();
         await show(tester, find.widgetWithText(AppButton, 'Enregistrer'));
         await tester.tap(find.widgetWithText(AppButton, 'Enregistrer'));
         await tester.pump();
         expect(controller.settings.destination.host, '192.168.1.10');
-        expect(controller.settings.destination.folder, 'Photos');
+        expect(controller.settings.destination.share, 'home');
+        expect(controller.settings.destination.folder, 'Photos/Téléphone');
+        expect(fake.password, 'motdepasse');
+        expect(fake.tested.single.user, 'shine');
+        expect(find.textContaining('Connexion réussie'), findsOneWidget);
+
+        // Le NAS refuse : l'explication s'affiche, en français.
+        fake.connectionError = 'Le NAS a refusé l\'identifiant ou le mot de passe.';
+        await show(tester, find.widgetWithText(AppButton, 'Tester'));
+        await tester.tap(find.widgetWithText(AppButton, 'Tester'));
+        await tester.pump();
+        expect(find.text(fake.connectionError!), findsOneWidget);
 
         await show(tester, find.text('Ajouter « Livebox-Salon »'));
         await tester.tap(find.text('Ajouter « Livebox-Salon »'));

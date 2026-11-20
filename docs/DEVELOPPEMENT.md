@@ -19,8 +19,13 @@ Interface (MainActivity.kt) ◀── ProgressHub.kt (avancement) ─┘        
 - **`Destination`** (`lib/core/destination.dart`) : l'interface vers le NAS. Six
   opérations (`open`, `sizeOf`, `makeDirs`, `write`, `read`, `renameNoReplace`) et aucune
   suppression. `MemoryDestination` (avec coupures et corruptions simulées) et
-  `LocalFolderDestination` servent aux tests. `lib/platform/destinations.dart` choisira le
-  vrai protocole ; tant qu'il n'est pas branché, il renvoie `null` et la sauvegarde le dit.
+  `LocalFolderDestination` servent aux tests. La vraie : `SmbDestination`
+  (`lib/platform/smb_destination.dart`), le NAS en partage Windows (SMB 2/3), via le
+  canal `sbackup/smb` et `SmbChannel.kt` (bibliothèque [smbj](https://github.com/hierynomus/smbj)).
+  Écriture et relecture par morceaux de 1 Mio, à une position donnée (reprise), renommage
+  refusé si la cible existe (`rename(…, replaceIfExist = false)`). Le mot de passe est
+  chiffré par une clé du coffre d'Android (`SecretStore.kt`) et n'est jamais renvoyé à
+  l'interface.
 - **`BackupEngine`** (`lib/core/engine.dart`), pour chaque fichier absent de l'index :
   1. empreinte SHA-256 du fichier du téléphone ;
   2. contenu déjà sauvegardé (même empreinte) → noté, rien n'est envoyé ;
@@ -57,12 +62,15 @@ Interface (MainActivity.kt) ◀── ProgressHub.kt (avancement) ─┘        
 
 ## Ce qui est vérifié, et comment
 
-- **Par les tests** (`flutter test`) : le moteur et les passages complets contre une
+- **Par les tests** (`flutter test`) : la destination SMB côté Dart contre un faux NAS
+  derrière le canal (`test/smb_test.dart` : morceaux, coupure et reprise, conflit de noms,
+  erreurs) ; le moteur et les passages complets contre une
   destination en mémoire et un vrai dossier (coupure et reprise, fichier abîmé, conflit
   de noms, index perdu, doublons, fichier disparu, Wi-Fi perdu en route), et l'interface
   à trois tailles d'écran, en thème clair et sombre, avec le texte agrandi.
 - **Par la compilation seulement** (CI GitHub) : tout le code Android (Kotlin, manifeste,
-  WorkManager, service au premier plan). Il n'a pas encore tourné sur un vrai téléphone.
+  WorkManager, service au premier plan, SMB avec smbj, coffre à mot de passe). Jamais
+  essayé face au vrai Synology DS415+. Il n'a pas encore tourné sur un vrai téléphone.
 
 ## Développement
 

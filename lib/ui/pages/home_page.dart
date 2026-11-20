@@ -347,11 +347,11 @@ List<SetupStep> setupSteps(AppController controller) {
         action: 'Tout autoriser',
         onTap: () => controller.request(PermissionRequest.appSettings),
       ),
-    if (!s.destination.isComplete)
+    if (!s.destination.isComplete || !controller.hasPassword)
       const _PageStep(
         icon: Icons.dns_outlined,
         title: 'Le NAS',
-        text: 'Son adresse sur le réseau de la maison et le dossier où ranger les photos.',
+        text: 'Son adresse sur le réseau de la maison, votre compte et le dossier où ranger les photos.',
         action: 'Indiquer',
         target: SettingsPage(),
       ),

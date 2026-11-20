@@ -49,6 +49,13 @@ android {
         }
     }
 
+    packaging {
+        resources {
+            // smbj et ses dépendances embarquent des fichiers de licence en double.
+            excludes += setOf("META-INF/versions/**", "META-INF/*.md", "META-INF/LICENSE*", "META-INF/NOTICE*")
+        }
+    }
+
     buildTypes {
         release {
             // Clé personnelle si key.properties est présent, sinon clé de debug
@@ -72,4 +79,6 @@ dependencies {
     // Sauvegardes en arrière-plan : planification, déclencheur « nouvelle photo », service
     // au premier plan pour les gros transferts.
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+    // Partage Windows (SMB 2/3) : c'est ainsi que le téléphone écrit sur le NAS Synology.
+    implementation("com.hierynomus:smbj:0.14.0")
 }

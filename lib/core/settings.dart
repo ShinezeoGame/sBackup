@@ -4,30 +4,46 @@ import 'dart:io';
 /// Thème de l'interface : automatique (suit le réglage du système), clair ou sombre.
 enum AppThemeMode { auto, light, dark }
 
-/// Où et comment joindre le NAS. Le protocole sera branché une fois choisi ; les champs
-/// communs à tous (adresse, dossier, identifiant) sont déjà là.
+/// Où joindre le NAS, en partage Windows (SMB) : `\\<hôte>\<partage>\<dossier>`.
+///
+/// Par défaut, l'espace personnel d'un NAS Synology (`home`) et son dossier `Photos`, que
+/// l'application Synology Photos affiche d'elle-même. Le mot de passe n'est pas ici : il est
+/// gardé chiffré par Android (`SecretStore.kt`).
 class DestinationConfig {
-  const DestinationConfig({this.host = '', this.folder = '', this.user = ''});
+  const DestinationConfig({this.host = '', this.share = defaultShare, this.folder = defaultFolder, this.user = ''});
 
-  /// Adresse du NAS sur le réseau de la maison (`192.168.1.10` ou `nas.local`).
+  static const defaultShare = 'home';
+  static const defaultFolder = 'Photos/Téléphone';
+
+  /// Adresse IP du NAS sur le réseau de la maison (`192.168.1.10`).
   final String host;
 
-  /// Dossier de destination sur le NAS (`Photos/Téléphone`).
+  /// Dossier partagé du NAS (`home`, `photo`…).
+  final String share;
+
+  /// Dossier de destination dans ce partage (`Photos/Téléphone`), créé s'il manque.
   final String folder;
+
+  /// Compte du NAS (celui de DSM).
   final String user;
 
-  bool get isComplete => host.trim().isNotEmpty && folder.trim().isNotEmpty;
+  bool get isComplete => host.trim().isNotEmpty && share.trim().isNotEmpty && user.trim().isNotEmpty;
 
-  Map<String, Object> toJson() => {'hote': host, 'dossier': folder, 'utilisateur': user};
+  Map<String, Object> toJson() => {'hote': host, 'partage': share, 'dossier': folder, 'utilisateur': user};
 
   factory DestinationConfig.fromJson(Map<String, dynamic> map) => DestinationConfig(
     host: map['hote'] as String? ?? '',
-    folder: map['dossier'] as String? ?? '',
+    share: map['partage'] as String? ?? defaultShare,
+    folder: map['dossier'] as String? ?? defaultFolder,
     user: map['utilisateur'] as String? ?? '',
   );
 
-  DestinationConfig copyWith({String? host, String? folder, String? user}) =>
-      DestinationConfig(host: host ?? this.host, folder: folder ?? this.folder, user: user ?? this.user);
+  DestinationConfig copyWith({String? host, String? share, String? folder, String? user}) => DestinationConfig(
+    host: host ?? this.host,
+    share: share ?? this.share,
+    folder: folder ?? this.folder,
+    user: user ?? this.user,
+  );
 }
 
 class Settings {

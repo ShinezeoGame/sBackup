@@ -9,10 +9,10 @@
   <a href="https://github.com/ShinezeoGame/sBackup/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/ShinezeoGame/sBackup?style=for-the-badge&label=version&color=C2692B&labelColor=3B2516"></a>
 </p>
 
-> **En construction.** L'application, son moteur de sauvegarde et la sauvegarde en
-> arrière-plan sont en place. Le branchement au NAS (le protocole : partage Windows,
-> WebDAV ou SFTP) arrive dans la prochaine version. D'ici là, sBackup ne peut encore
-> rien envoyer, et il le dit clairement.
+> **Première version.** Tout est en place et testé sur ordinateur, avec un NAS simulé,
+> mais sBackup n'a pas encore tourné sur un vrai téléphone face à un vrai NAS. Vos photos
+> ne risquent rien (sBackup ne supprime ni ne modifie jamais rien) ; au pire, une
+> sauvegarde échoue et l'historique dit pourquoi.
 
 Une alternative à Google Photos qui reste chez vous. Vous rentrez, le téléphone retrouve le
 Wi-Fi de la maison, et les photos du jour partent sur votre NAS, rangées par année et par
@@ -36,9 +36,15 @@ mois. Pas d'abonnement, pas de nuage, et rien n'est jamais supprimé.
 
 ## Ce que fait sBackup
 
+### 🗄️ Votre NAS Synology, sans rien y installer
+sBackup écrit sur le NAS par le partage Windows (SMB), déjà actif sur un Synology. Par
+défaut, les photos arrivent dans votre espace personnel, dossier `Photos/Téléphone` :
+l'application Synology Photos les affiche d'elle-même. Votre mot de passe reste chiffré
+sur le téléphone, et un bouton « Tester » vérifie la connexion tout de suite.
+
 ### 🗂️ Les albums de votre choix
-Appareil photo, captures d'écran et WhatsApp sont cochés d'office ; ajoutez ou retirez
-n'importe quel album d'un geste.
+L'appareil photo et les captures d'écran sont cochés d'office ; ajoutez ou retirez
+n'importe quel album (WhatsApp, Téléchargements…) d'un geste.
 
 ### ♻️ Une sauvegarde qui n'envoie que les nouveautés
 Un fichier déjà sauvegardé n'est jamais renvoyé, même s'il est dans deux albums. Si le Wi-Fi
@@ -73,8 +79,8 @@ Un thème clair et un thème sombre, au choix ou selon le téléphone.
 ## Prise en main
 
 1. **Installez** sBackup sur le téléphone avec le bouton en haut de cette page.
-2. **Suivez « À régler »** sur l'accueil : accès aux photos, adresse du NAS, Wi-Fi de la
-   maison, exemption de batterie.
+2. **Suivez « À régler »** sur l'accueil : accès aux photos, le NAS (adresse IP, votre
+   compte), le Wi-Fi de la maison, l'exemption de batterie.
 3. **C'est tout.** Touchez « Sauvegarder maintenant » pour la première fois ; ensuite,
    tout se fait seul.
 
@@ -98,6 +104,9 @@ position.
 
 **Et si je retouche une photo ?** La version retouchée est sauvegardée à côté de
 l'originale, sous un nom voisin (`IMG_1234 (2).jpg`).
+
+**Avec quel NAS ?** Tout NAS qui propose un partage Windows (SMB 2 ou 3) : Synology, QNAP,
+un PC Windows… sBackup a été pensé autour d'un Synology DS415+.
 
 **Avec quels téléphones ?** Android 11 ou plus récent. sBackup a été pensé autour d'un
 Samsung Galaxy S25 sous Android 15.

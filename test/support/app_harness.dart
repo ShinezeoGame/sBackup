@@ -104,12 +104,28 @@ class FakePlatform implements PhonePlatform {
 
   @override
   Stream<BackupProgress> progress() => progressController.stream;
+
+  String? password = 'secret';
+  String? connectionError;
+  final tested = <DestinationConfig>[];
+
+  @override
+  Future<void> savePassword(String value) async => password = value;
+
+  @override
+  Future<bool> hasPassword() async => password != null;
+
+  @override
+  Future<String?> testDestination(DestinationConfig config) async {
+    tested.add(config);
+    return connectionError;
+  }
 }
 
 /// Réglages prêts à sauvegarder.
 const readySettings = Settings(
   homeNetworks: ['Maison'],
-  destination: DestinationConfig(host: '192.168.1.10', folder: 'Photos/Téléphone', user: 'shine'),
+  destination: DestinationConfig(host: '192.168.1.10', user: 'shine'),
 );
 
 final sampleHistory = [
